@@ -2,10 +2,11 @@
 function(x)
 {
     par(mfrow = c(2, 2))
-    hist(x)
-    boxplot(x)
-    iqd <- summary(x)[5] - summary(x)[2]
-    plot(density(x, width = 2 * iqd), xlab = "x", ylab = "", type = "l")
+    hist(x, main="Histogram", xlab="")
+    boxplot(x, main ="Boxplot")
+    iqd <- IQR(x)
+    plot(density(x, width = 2 * iqd), ylab = "", 
+        type = "l", main="Density")
     qqnorm(x)
     qqline(x)
     par(mfrow = c(1, 1))
