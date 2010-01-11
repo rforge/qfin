@@ -1,24 +1,21 @@
 useDynLib(Rsafd)
 
+import("stats", "mvtnorm", "robustbase", "rgl")
 
-
-export(abscor, axcor, begday, bivd, block.max, bns, bscall, contour.dbivd, contour.pbivd,
+export(abscor, axcor, begday, block.max, bns, bscall, 
 contour.pcopula, contour.dcopula, der, dgev, dgpd, dmvnorm, eda.shape, empirical.copula, estimate.mix.gev,
 fit.copula, fns, gev.lmom, gev.ml,
 gpd.1p, gpd.1q, gpd.2p, gpd.2q, gpdjoint.1p, gpdjoint.2p, gpd.lmom, gpd.ml,
 gpd.tail, kalman, kdest, Kendalls.tau, kreg, l1fit, lm.diag, localmean, localvar,
-makedate, noon, pcopula, persp.dbivd, persp.pbivd, pgev, pgpd, plot.gpd, 
+makedate, noon, pcopula, pgev, pgpd, plot.gpd, 
 ploting.position.estimator.LMOM, p2Dnorm, pred.ar, qgev, qgpd, 
 qqexp, qqnorm, rcopula, readindex, rgev, rgpd, rmvnorm, sample.LMOM, shape.plot,
 Spearmans.rho, squarecor, sstl, tail.index, tailplot, VaR.exp.sim, yns)
-
 data(AFT.mat, BASKETBALL, BCofLRet, CCofLRet,
-CORNTEMP, CRUDE, DSP, DSP500, DSPLR, DUKE.index, DUKE.wer, DUKE1.wer,
-DUKE2.wer, DukeLR, ENRON.index, ethanol, FRWRD, GermanB041700,
-GEYSER, HILLS, HOWAREYOU, IBM, INT.YIELD, LIFE, M.wer, M1.wer, M2.wer,
-MID1, MIND, MORN.mat, MSP, PCS, PPRICE, PSPOT, ROCK, SHAPE.XI, SHIP, SMORN.mat,
+CORNTEMP, DSP, DSP500, DSPLR, DUKE.index, DukeLR, ENRON.index, FRWRD, GermanB041700,
+GEYSER, HILLS, IBM, INT.YIELD, LIFE, MID1, MIND, MORN.mat, MSP, PCS, PPRICE, PSPOT, ROCK, SHAPE.XI, SHIP, SMORN.mat,
 SPFUT, STRENGTH, SUBSP, swap, TC, TRGSP, TSTSP, TRGSP2000, TSTSP2000,
-us.bis.yield, UTILITIES, USBN041700, UTIL.index, VINEYARD, WSP, WSPLRet, y4nls1,y4nls2)
+us.bis.yield, UTILITIES, USBN041700, UTIL.index, VINEYARD, WSP, WSPLRet, y4nls1, y4nls2)
 
 # export(AFT.mat, BASKETBALL, BCofLRet, CCofLRet,
 #CORNTEMP, CRUDE, DSP, DSP500, DSPLR, DUKE.index, DUKE.wer, DUKE1.wer,

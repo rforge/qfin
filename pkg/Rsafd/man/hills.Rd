@@ -1,9 +1,9 @@
 \name{hills}
 \alias{hills}
 \docType{data}
-\title{ ~~ data name/kind ... ~~}
+\title{Hill races}
 \description{
-  ~~ A concise (1-5 lines) description of the dataset. ~~
+  A data frame of 35 Scottish hill races.
 }
 \usage{data(hills)}
 \format{
@@ -13,15 +13,6 @@
     \item{\code{climb}}{a numeric vector}
     \item{\code{time}}{a numeric vector}
   }
-}
-\details{
-  ~~ If necessary, more details than the __description__ above ~~
-}
-\source{
-  ~~ reference to a publication or URL from which the data were obtained ~~
-}
-\references{
-  ~~ possibly secondary sources and usages ~~
 }
 \examples{
 data(hills)

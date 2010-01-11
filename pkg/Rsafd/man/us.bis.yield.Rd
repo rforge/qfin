@@ -1,9 +1,9 @@
 \name{us.bis.yield}
 \alias{us.bis.yield}
 \docType{data}
-\title{ ~~ data name/kind ... ~~}
+\title{US yield data}
 \description{
-  ~~ A concise (1-5 lines) description of the dataset. ~~
+  US yield curve provided by the bank of international settlement.
 }
 \usage{data(us.bis.yield)}
 \format{

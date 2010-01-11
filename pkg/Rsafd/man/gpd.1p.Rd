@@ -52,6 +52,9 @@
 
 \examples{
 # One tail
+data("BCofLRet")
+NZ <- (BCofLRet !=0)
+BLRet <- BCofLRet[NZ]
 X <- BLRet[BLRet > 0]
 x.est <- gpd.tail(X)
 
@@ -61,6 +64,9 @@ big.X <- sort(X) > 0.01
 points((sort(X))[big.X], (ppoints(sort(X)))[big.X])
 
 # random generation from this distribution:
+data("BCofLRet")
+NZ <- (BCofLRet !=0)
+BLRet <- BCofLRet[NZ]
 X <- BLRet[BLRet != 0]
 x.est <- gpd.tail(X, upper = 0.015, lower = -0.015, method = "lmom")
 n <- length(X)
@@ -70,4 +76,4 @@ plot(Y, col = 4, , ylim = c(-0.3,0.3))
 }
 
 \author{Rene Carmona, \email{rcarmona@princeton.edu}}
-\keyword{empirical distribution}
+\keyword{distribution}

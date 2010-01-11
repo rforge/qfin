@@ -10,9 +10,9 @@
 }
       
 \usage{
-       \code{
+       
          gpd.tail(data, one.tail=F, upper = NA, lower = NA, upper.method ="ml", lower.method="ml", plot = T, ...)
-}
+
 }
 
 \arguments{ 
@@ -69,8 +69,11 @@ with \code{FinMetrics}.
 
 \examples{
 # One tail
+data("BCofLRet")
+NZ <- (BCofLRet !=0)
+BLRet <- BCofLRet[NZ]
 X <- BLRet[BLRet > 0]
-x.est <- gpd.tail(X,one.tail=T,upper=0.04)
+x.est <- gpd.tail(X,one.tail=TRUE,upper=0.04)
 
 y <- c(10:500)/1000
 plot(y, gpd.1p(y,x.est), log = "x", type = "l")
@@ -83,7 +86,7 @@ x.est <- gpd.tail(X, upper = 0.015, lower = -0.015, method = "lmom")
 n <- length(X)
 Y <- gpd.2q(runif(n), x.est)
 plot(X, ylim = c(-0.3,0.3))
-plot(Y, col = 4, , ylim = c(-0.3,0.3))
+plot(Y, col = 4, ylim = c(-0.3,0.3))
 }
 
 \author{Rene Carmona, \email{rcarmona@princeton.edu}}

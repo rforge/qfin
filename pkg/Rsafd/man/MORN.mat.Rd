@@ -1,27 +1,21 @@
 \name{MORN.mat}
 \alias{MORN.mat}
 \docType{data}
-\title{ ~~ data name/kind ... ~~}
+\title{Matrix of Morning High Frequency S&P Indices}
 \description{
-  ~~ A concise (1-5 lines) description of the dataset. ~~
-}
-\usage{data(MORN.mat)}
-\format{
-  The format is:
- num [1:59, 1:6] 4.8 6.5 5.1 4.5 8.8 ...
- - attr(*, "dimnames")=List of 2
-  ..$ : NULL
-  ..$ : chr [1:6] "range" "nbticks" "vol" "volratio" ...
+59 x 6 matrix of the afternoon values of the 6 indicators computed for 59 trading days 
 }
 \details{
-  ~~ If necessary, more details than the __description__ above ~~
+      range nbticks          vol   volratio  l2slope  ticksep
+[1,]   4.8     220 5.186267e-08 0.07729659 320.0999 9.482759
+[2,]   7.6     216 5.553202e-08 0.15074484 319.5855 7.941176
+[3,]   6.8     206 6.997459e-08 0.14162258 306.5356 7.253521
+[4,]   5.6     223 5.573436e-08 0.12585191 331.0890 8.173488
+[5,]   6.0     202 6.540085e-08 0.05605950 306.5158 7.314424
+[6,]   7.3     221 7.859222e-08 0.02101963 315.5553 7.786260
 }
 \source{
-  ~~ reference to a publication or URL from which the data were obtained ~~
-}
-\references{
-  ~~ possibly secondary sources and usages ~~
-}
+R. A. Carmona: Statistical Analysis of Financial Data in S-Plus, (2004) Springer Verlag, p. 193}
 \examples{
 data(MORN.mat)
 ## maybe str(MORN.mat) ; plot(MORN.mat) ...

@@ -8,13 +8,13 @@
 }
 \usage{data(BCofLRet)}
 \format{
-  The format is:
- num [1:3386]  0.0000  0.0000  0.0000  0.0000 -0.0123 ...
+  Object of a numeric vector.
 }
 \source{
 R. A. Carmona: Statistical Analysis of Financial Data in S-Plus, (2004) Springer Verlag, Chapter 2 }
 \examples{
-data(BCofLRet),data(CCofLRet)
+data(BCofLRet)
+data(CCofLRet)
 ## maybe str(BCofLRet) ; plot(BCofLRet) ...
 }
 \keyword{datasets}

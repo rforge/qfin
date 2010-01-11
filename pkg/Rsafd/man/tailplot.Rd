@@ -32,4 +32,4 @@ tailplot(x.est)
 }
 
 \author{Rene Carmona, \email{rcarmona@princeton.edu}}
-\keyword{plot}
+\keyword{hplot}

@@ -44,10 +44,10 @@ A list of the elements
 \references{library \code{Rmetrics} and \code{S-Plus} manual }
 \author{Rene Carmona}
 
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{\code{\link{dnorm}}}
 \examples{
-TSAMPLE<-rmvnorm(n=128,mean=rep(0,2),sd=rep(1,2),rho=.18) 
-§TDENS <- kdest(TSAMPLE[,1],TSAMPLE[,2]) 
+TSAMPLE <- rmvnorm(n=128, mean=rep(0,2), sd=rep(1,2), rho=.18) 
+TDENS <- kdest(TSAMPLE[,1], TSAMPLE[,2]) 
 }
 
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{distribution}

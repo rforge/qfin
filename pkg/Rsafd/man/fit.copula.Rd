@@ -17,7 +17,7 @@ fit.copula(data, family = "normal", plotPicture = T, init.est = NA, epsilon = 1e
   \item{epsilon}{ Tolerance to determine if the optimization procedure converged }
 }
 \details{
-The copula families which are implemented can be can be given specifying one of the strings "normal","frank","kimeldorf.sampson","gumbel","galambos","husler.reiss","bb1","tawn","bb2","bb3","bb5","bb6","bb7","normal.mix","bb4", "joe"}
+The copula families which are implemented can be given specifying one of the strings "normal","frank","kimeldorf.sampson","gumbel","galambos","husler.reiss","bb1","tawn","bb2","bb3","bb5","bb6","bb7","normal.mix","bb4", "joe"}
 
 \value{
   ~Describe the value returned
@@ -29,7 +29,7 @@ The copula families which are implemented can be can be given specifying one of 
 \references{ R. A. Carmona: Statistical Analysis of Financial Data in S-Plus, (2004) Springer Verlag, Chapter 2}
 \author{Rene Carmona}
 
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{\code{\link{empirical.copula}}}
 \examples{
 ##---- Should be DIRECTLY executable !! ----
 ##-- ==>  Define data, use random,
