@@ -23,7 +23,7 @@
 }
 
 \value{
-        Plot of the estimates of the shape parameter $\xi$ as function of the threshold
+        Plot of the estimates of the shape parameter as function of the threshold
         (negative of the threshold when code{tail="lower"}). The percentages of points
         exceeding the threshold are given on the upper part of the plot.
 }

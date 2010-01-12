@@ -52,7 +52,7 @@
 }
 
 
-\note{     If \code{plot = TRUE} a plot of the exceedences over the threshold against the
+\note{ If \code{plot = TRUE} a plot of the exceedences over the threshold against the
      quantiles of the estimated GPD is produced for each of the tails studied.
 
 The semiparametric estimation performed by this function was done by the functions
@@ -64,7 +64,7 @@ with \code{FinMetrics}.
 }
 
 \seealso{
-\code{\link{gpd.lm}}, \code{\link{gpd.lmom}}}
+\code{\link{gpd.lm}}, \code{\link{gpd.lmom}}
 }
 
 \examples{

@@ -10,11 +10,11 @@ The mean of the distribution may be a d-dimensional vector. The covariance matri
  and \code{rho} should be scalar. The dimension \code{d} may be inferred from other arguments.
 }
 
-\format{
-\item{\code{dmvnorm}}{Compute multivariate normal density}
-\item{\code{pmvnorm}}{Compute multivariate normal c.d.f.}
-\item{\code{rmvnorm}}{Generate random samples from the multivariate normal distribution}
-
+\details{
+\code{dmvnorm},compute multivariate normal density.
+\code{pmvnorm} compute multivariate normal c.d.f.
+\code{rmvnorm} generate random samples from the multivariate normal distribution.
+}
 \usage{
 dmvnorm(x, mean = rep(0, d), cov = diag(d), sd, rho, d = 2, sigma = cov, log = FALSE)
 
