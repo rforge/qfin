@@ -4,14 +4,16 @@
 \alias{rmvnorm}
 
 \title{ Multivariate Normal (Gaussian) distribution }
-\description{
-\item{dmvnorm}{Compute multivariate normal density}
-\item{pmvnorm}{Compute multivariate normal c.d.f.}
-\item{rmvnorm}{Generate random samples from the multivariate normal distribution}
 
+\description{
 The mean of the distribution may be a d-dimensional vector. The covariance matrix should be given as a d x d non-negative definite matrix if supplied with the parameter \code{cov}. It can also be given,  if cov is missing, by a vector \code{sd} for the marginal standard deviations and a scalar \code{rho} implying a constant correlation between all the marginals. If the covariance structure of the marginals is supplied in this way,  \code{sd} should be a d-dimensional vector,
  and \code{rho} should be scalar. The dimension \code{d} may be inferred from other arguments.
 }
+
+\format{
+\item{\code{dmvnorm}}{Compute multivariate normal density}
+\item{\code{pmvnorm}}{Compute multivariate normal c.d.f.}
+\item{\code{rmvnorm}}{Generate random samples from the multivariate normal distribution}
 
 \usage{
 dmvnorm(x, mean = rep(0, d), cov = diag(d), sd, rho, d = 2, sigma = cov, log = FALSE)

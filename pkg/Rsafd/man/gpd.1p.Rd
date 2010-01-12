@@ -14,12 +14,11 @@
 }
 
 \usage{
-       \code{
-         gpd.1p(x, est.object, linear = T) \\
-         gpd.1q(p, est.object, linear = T) \\
-         gpd.2p(x, est.object, linear = T) \\
-         gpd.2q(p, est.object, linear = T) \\
-   }
+       
+         gpd.1p(x, est.object, linear = TRUE) 
+         gpd.1q(p, est.object, linear = TRUE) 
+         gpd.2p(x, est.object, linear = TRUE) 
+         gpd.2q(p, est.object, linear = TRUE) 
 }
 
 \arguments{

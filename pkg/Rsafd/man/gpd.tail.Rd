@@ -37,22 +37,22 @@
             the choice of the method used to estimate the parameters of the generalized
             Pareto distribution fitted to the part of the data below \code{lower}}
        \item{plot}{If \code{TRUE} (default), for each tail, a plot of the excesses over threshold
-           against the quantiles of the GPD with the same shape parameter $\xi$
+           against the quantiles of the GPD with the same shape parameter
            is produced. The fact that the points line up supports the assumption about the
            (generalized) Pareto nature of the tail in question.}
 }
 
 \value{    
        The value of \code{gpd.tail} is an object of class \code{gpd}. It is a list
-       containing fields: \verb=$n= -- length of the data, \verb=$data= --
-       sorted vector of data points, \verb=$upper.thresh= -- the value of upper threshold, and
-       \verb=$upper.par.ests= -- estimates of GPD shape and scale parameter for the tail.
-       and \verb=$lower.thresh= and \verb=$lower.par.ests= representing
+       containing fields: length of the data,
+       sorted vector of data points, the value of upper threshold, and
+       estimates of GPD shape and scale parameter for the tail.
+       and  representing
        threshold and parameter estimates for the lower tail.
 }
 
 
-\note{     If \code{plot = T} a plot of the exceedences over the threshold against the
+\note{     If \code{plot = TRUE} a plot of the exceedences over the threshold against the
      quantiles of the estimated GPD is produced for each of the tails studied.
 
 The semiparametric estimation performed by this function was done by the functions

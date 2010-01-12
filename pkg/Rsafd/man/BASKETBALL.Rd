@@ -1,7 +1,9 @@
 \name{BASKETBALL}
 \alias{BASKETBALL}
 \docType{data}
-\title{Basketball data used in regression problems}
+\title{Basketball data}
+\description{Basketball data used in regression problems.
+}
 \usage{data(BASKETBALL)}
 \format{
  Object of class \code{data.frame}.
