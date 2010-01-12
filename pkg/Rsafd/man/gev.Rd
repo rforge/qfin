@@ -53,9 +53,7 @@ R. A. Carmona: Statistical Analysis of Financial Data in S-Plus, (2004) Springer
     xi <- c(-0.2,0.0,0.2)
     x <- rep(1.0,3)
     pgev(x,m,lambda,xi)
-    [1] 0.6480696 0.6922006 0.7522940
-}
+    }
 
 \author{Rene Carmona, \email{rcarmona@princeton.edu}}
 \keyword{distribution}
-\keyword{dategen}

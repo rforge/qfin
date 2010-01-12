@@ -34,13 +34,5 @@ block.max(data, overlap = 0, nb.blocks = NA, block.size = 100, method = "ml")
 \references{Rene Carmona: Heavy Tail Distributions and Financial Applications. Springer Verlag (2008)}
 \author{Rene Carmona }
 
-\examples{
-DSVP <- rgpd(8192,m=0,lambda=1.0,xi=0.7)
-block.max(DVSP)$par
-            m        lambda            xi 
- 8.306203e+08  3.698824e-15 -2.443437e+01 
-# xi is negative and lambda is very small, 
-# this is screaming for some explaining!
-}
 \keyword{Tail Shape Parameter}
 \keyword{Block Maxima }

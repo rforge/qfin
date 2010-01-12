@@ -1,6 +1,9 @@
 useDynLib(Rsafd)
 
 import("stats", "mvtnorm", "robustbase", "rgl")
+#importFrom(contour, persp)
+#importFrom( contour.pbivd)
+#importFrom( persp.dbivd)
 
 export(abscor, axcor, begday, block.max, bns, bscall, 
 contour.pcopula, contour.dcopula, der, dgev, dgpd, dmvnorm, eda.shape, empirical.copula, estimate.mix.gev,
@@ -16,6 +19,8 @@ CORNTEMP, DSP, DSP500, DSPLR, DUKE.index, DukeLR, ENRON.index, FRWRD, GermanB041
 GEYSER, HILLS, IBM, INT.YIELD, LIFE, MID1, MIND, MORN.mat, MSP, PCS, PPRICE, PSPOT, ROCK, SHAPE.XI, SHIP, SMORN.mat,
 SPFUT, STRENGTH, SUBSP, swap, TC, TRGSP, TSTSP, TRGSP2000, TSTSP2000,
 us.bis.yield, UTILITIES, USBN041700, UTIL.index, VINEYARD, WSP, WSPLRet, y4nls1, y4nls2)
+
+#exportMethods(contour.dbivd, contour.pbivd, persp.dbivd)
 
 # export(AFT.mat, BASKETBALL, BCofLRet, CCofLRet,
 #CORNTEMP, CRUDE, DSP, DSP500, DSPLR, DUKE.index, DUKE.wer, DUKE1.wer,
