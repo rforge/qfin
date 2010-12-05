@@ -14,11 +14,11 @@ makedate, noon, pcopula, pgev, pgpd, plot.gpd,
 ploting.position.estimator.LMOM, p2Dnorm, pred.ar, qgev, qgpd, 
 qqexp, qqnorm, rcopula, readindex, rgev, rgpd, rmvnorm, sample.LMOM, shape.plot,
 Spearmans.rho, squarecor, sstl, tail.index, tailplot, VaR.exp.sim, yns)
-data(AFT.mat, BASKETBALL, BCofLRet, CCofLRet,
-CORNTEMP, DSP, DSP500, DSPLR, DUKE.index, DukeLR, ENRON.index, FRWRD, GermanB041700,
-GEYSER, HILLS, IBM, INT.YIELD, LIFE, MID1, MIND, MORN.mat, MSP, PCS, PPRICE, PSPOT, ROCK, SHAPE.XI, SHIP, SMORN.mat,
-SPFUT, STRENGTH, SUBSP, swap, TC, TRGSP, TSTSP, TRGSP2000, TSTSP2000,
-us.bis.yield, UTILITIES, USBN041700, UTIL.index, VINEYARD, WSP, WSPLRet, y4nls1, y4nls2)
+## data(AFT.mat, BASKETBALL, BCofLRet, CCofLRet,
+## CORNTEMP, DSP, DSP500, DSPLR, DUKE.index, DukeLR, ENRON.index, FRWRD, GermanB041700,
+## GEYSER, HILLS, IBM, INT.YIELD, LIFE, MID1, MIND, MORN.mat, MSP, PCS, PPRICE, PSPOT, ROCK, SHAPE.XI, SHIP, SMORN.mat,
+## SPFUT, STRENGTH, SUBSP, swap, TC, TRGSP, TSTSP, TRGSP2000, TSTSP2000,
+## us.bis.yield, UTILITIES, USBN041700, UTIL.index, VINEYARD, WSP, WSPLRet, y4nls1, y4nls2)
 
 #exportMethods(contour.dbivd, contour.pbivd, persp.dbivd)
 
