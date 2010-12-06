@@ -1,6 +1,6 @@
 Package: Rsafd
-Version: 1.0
-Date: 08-28-2007
+Version: 1.1
+Date: 12-06-2010
 Title: Statistical Analysis of Financial Data in R
 Author: Rene Carmona <rcarmona@princeton.edu>
 Maintainer: Paul Hofmarcher <paul.hofmarcher@wu.ac.at>
