@@ -1,5 +1,5 @@
-\name{VW_Intraday}
-\alias{VW_Intraday}
+\name{vw}
+\alias{vw}
 \docType{data}
 \title{VW_Intraday data}
 \description{VW Intraday stock values for the period 2008-10-24 -- 2008-10-29.
@@ -14,7 +14,7 @@
 \references{
 http://de.wikipedia.org/wiki/Datei:VW-Intraday-oct2008.png}
 \examples{
-data(VW_Intraday)
- head(VW_Intraday) 
+data(vw)
+ head(vw) 
 }
 \keyword{datasets}

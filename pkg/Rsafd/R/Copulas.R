@@ -41,9 +41,9 @@ setClass("bivd", representation(Xmarg = "character", Ymarg = "character",
      param.Xmarg = "numeric", param.Ymarg = "numeric"))
 
 
-if(isGeneric("pbivd")) removeGeneric("pbivd")
-if(isGeneric("dbivd")) removeGeneric("dbivd")
-if(isGeneric("rbivd")) removeGeneric("rbivd")
+## if(isGeneric("pbivd")) removeGeneric("pbivd")
+## if(isGeneric("dbivd")) removeGeneric("dbivd")
+## if(isGeneric("rbivd")) removeGeneric("rbivd")
 
 
 ##############
@@ -218,7 +218,188 @@ rbivd <- function(dist,n) {
    data.frame(val)
 }
 
+###########################################################################################################################################################################
+########################################## 
+### Functions pbivd
+##########################################
 
+
+#if(isGeneric("pbivd"))removeGeneric("pbivd")
+setGeneric("pbivd", function(dist,...)standardGeneric("pbivd"))
+setMethod("pbivd","ANY",function(dist, x, y)   {
+    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    return(pcopula(dist@copula, xmar, ymar))
+} )
+
+
+## improved
+setGeneric("dbivd",function(dist,...) standardGeneric("dbivd"))
+
+setMethod("dbivd", "ANY",function(dist, x, y){
+    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
+} )
+
+
+
+# ###########################
+### Functions rbivd  ### 
+setGeneric("rbivd",function(dist,...) standardGeneric("rbivd"))
+setMethod("rbivd","ANY",function(dist,n)  {
+    uv <- rcopula(dist@copula, n)
+    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    val <- list(x = Xsim, y = Ysim)
+    data.frame(val)
+} )
+
+
+##############################################################################################################################
+### Functions persp.dbivd  ### 
+
+#if(isGeneric("persp.dbivd"))removeGeneric("persp.dbivd")
+setGeneric("persp.dbivd",function(dist,...) standardGeneric("persp.dbivd"))
+setMethod("persp.dbivd", "ANY",function(dist, n = 50, xlim = NA, ylim = NA, ...)   {
+    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+    divis <- divis[2:(n + 1)]
+    if((is.na(xlim[1])) | (length(xlim) != 2)) {
+        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    }
+    else {
+        x <- seq(from = xlim[1], to = xlim[2], length = n)
+    }
+    if(is.na(ylim[1]) | length(ylim) != 2) {
+        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    }
+    else {
+        y <- seq(from = ylim[1], to = ylim[2], length = n)
+    }
+    xmat <- rep(x, n)
+    ymat <- rep(y, each = n)
+    zmat <- dbivd(dist, xmat, ymat)
+
+persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
+
+#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
+#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
+    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
+    invisible(val)
+} )
+
+
+ #
+# 
+### Functions persp.pbivd  ### 
+
+setGeneric("persp.pbivd",function(dist,...) standardGeneric("persp.pbivd"))
+setMethod("persp.pbivd","ANY",function(dist, n = 50, xlim = NA, ylim = NA, ...)  ## standardGeneric("persp.pbivd"))
+## setMethod("persp.pbivd","normal.bivd",
+##      function(dist, n = 50, xlim = NA, ylim = NA, ...)
+          {
+    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+    divis <- divis[2:(n + 1)]
+    if((is.na(xlim[1])) | (length(xlim) != 2)) {
+        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    }
+    else {
+        x <- seq(from = xlim[1], to = xlim[2], length = n)
+    }
+    if(is.na(ylim[1]) | length(ylim) != 2) {
+        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    }
+    else {
+        y <- seq(from = ylim[1], to = ylim[2], length = n)
+    }
+    xmat <- rep(x, n)
+    ymat <- rep(y, each = n)
+    zmat <- pbivd(dist, xmat, ymat)
+#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
+#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
+
+persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
+
+     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
+    invisible(val)
+} )
+
+### Functions contour.dbivd  ### 
+
+#if(isGeneric("contour.dbivd")) removeGeneric("contour.dbivd")
+setGeneric("contour.dbivd",function(dist,...) standardGeneric("contour.dbivd"))
+setMethod("contour.dbivd","ANY",function(dist,n= 50, xlim = NA, ylim = NA, ...) #standardGeneric"contour.dbivd"))
+## setMethod("contour.dbivd","normal.bivd",
+##      function(dist, n = 50, xlim = NA, ylim = NA, ...) 
+          {
+    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+    divis <- divis[2:(n + 1)]
+    if((is.na(xlim[1])) | (length(xlim) != 2)) {
+        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    }
+    else {
+        x <- seq(from = xlim[1], to = xlim[2], length = n)
+    }
+    if(is.na(ylim[1]) | length(ylim) != 2) {
+        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    }
+    else {
+        y <- seq(from = ylim[1], to = ylim[2], length = n)
+    }
+    xmat <- rep(x, n)
+    ymat <- rep(y, each = n)
+    zmat <- dbivd(dist, xmat, ymat)
+    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
+contour(x,y,val$z)
+title("Contour Plot of the Density", xlab="x",ylab="y")
+    invisible(val)
+} )
+
+
+
+### Functions contour.pbivd  ### 
+
+#if(isGeneric("contour.pbivd"))removeGeneric("contour.pbivd")
+setGeneric("contour.pbivd",function(dist,...) standardGeneric("contour.pbivd"))
+setMethod("contour.pbivd","ANY",function(dist, n = 50, xlim = NA, ylim = NA, ...) ##  standardGeneric("contour.pbivd"))
+
+
+## setMethod("contour.pbivd","normal.bivd",
+##      function(dist, n = 50, xlim = NA, ylim = NA, ...)
+          {
+    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+    divis <- divis[2:(n + 1)]
+    if((is.na(xlim[1])) | (length(xlim) != 2)) {
+        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
+    }
+    else {
+        x <- seq(from = xlim[1], to = xlim[2], length = n)
+    }
+    if(is.na(ylim[1]) | length(ylim) != 2) {
+        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
+    }
+    else {
+        y <- seq(from = ylim[1], to = ylim[2], length = n)
+    }
+    xmat <- rep(x, n)
+    ymat <- rep(y, each = n)
+    zmat <- pbivd(dist, xmat, ymat)
+    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
+contour(x,y,val$z)
+title("Contour Plot of the CDF", xlab="x",ylab="y")
+    invisible(val)
+} )
+
+
+
+
+
+
+
+
+##############################################################################################################################################################################
 
 #########################
 # Empirical  Copulas Methods
@@ -3283,114 +3464,114 @@ setMethod("contour.plot","empirical.copula",
 #############################################################
 # persp functions for 3-D plots
 
-persp.dbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
+## persp.dbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
 
-    divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
-    divis <- divis[2:(n+1)]
+##     divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
+##     divis <- divis[2:(n+1)]
 
-    if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
-      x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
-    } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
+##     if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
+##       x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
+##     } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
 
-    if (is.na(ylim[1]) | length(ylim) != 2) {
-     y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
-    } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
+##     if (is.na(ylim[1]) | length(ylim) != 2) {
+##      y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
+##     } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
 
-    xmat <- rep(x, n )
-    ymat <- rep(y, each = n )
-    zmat <- dbivd(dist, xmat, ymat)
+##     xmat <- rep(x, n )
+##     ymat <- rep(y, each = n )
+##     zmat <- dbivd(dist, xmat, ymat)
 
-persp3d(x, x, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
+## persp3d(x, x, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
 
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat),
-#             z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues  = val2, ...) 
+## #    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat),
+## #             z = as.vector(zmat)))
+## #    guiPlot("Data Grid Surface", DataSetValues  = val2, ...) 
 
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
-       data = zmat   ))
-  invisible(val)     
+##     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
+##        data = zmat   ))
+##   invisible(val)     
 
-}
+## }
 
-persp.pbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
+## persp.pbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
 
-    divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
-    divis <- divis[2:(n+1)]
+##     divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
+##     divis <- divis[2:(n+1)]
 
-    if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
-      x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
-    } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
+##     if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
+##       x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
+##     } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
 
-    if (is.na(ylim[1]) | length(ylim) != 2) {
-     y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
-    } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
+##     if (is.na(ylim[1]) | length(ylim) != 2) {
+##      y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
+##     } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
 
-    xmat <- rep(x, n )
-    ymat <- rep(y, each = n )
-    zmat <- pbivd(dist, xmat, ymat)
+##     xmat <- rep(x, n )
+##     ymat <- rep(y, each = n )
+##     zmat <- pbivd(dist, xmat, ymat)
 
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "cdf")
+## persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "cdf")
 
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat),
-#             z = as.vector(zmat)))   
-#    guiPlot("Data Grid Surface", DataSetValues  = val2, ...) 
- val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
-       data = zmat   ))
-  invisible(val)     
-
-
+## #    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat),
+## #             z = as.vector(zmat)))   
+## #    guiPlot("Data Grid Surface", DataSetValues  = val2, ...) 
+##  val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
+##        data = zmat   ))
+##   invisible(val)     
 
 
-}
-
-contour.dbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-
-    divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
-    divis <- divis[2:(n+1)]
-
-    if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
-      x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
-    } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
-
-    if (is.na(ylim[1]) | length(ylim) != 2) {
-     y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
-    } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
-
-    xmat <- rep(x, n )
-    ymat <- rep(y, each = n )
-    zmat <- dbivd(dist, xmat, ymat)
-  val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
-       data = zmat   ))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="u",ylab="v")
-  invisible(val)
 
 
-}
+## }
 
-contour.pbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
+## contour.dbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
 
-    divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
-    divis <- divis[2:(n+1)]
+##     divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
+##     divis <- divis[2:(n+1)]
 
-    if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
-      x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
-    } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
+##     if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
+##       x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
+##     } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
 
-    if (is.na(ylim[1]) | length(ylim) != 2) {
-     y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
-    } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
+##     if (is.na(ylim[1]) | length(ylim) != 2) {
+##      y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
+##     } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
 
-    xmat <- rep(x, n )
-    ymat <- rep(y, each = n )
-    zmat <- pbivd(dist, xmat, ymat)
+##     xmat <- rep(x, n )
+##     ymat <- rep(y, each = n )
+##     zmat <- dbivd(dist, xmat, ymat)
+##   val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
+##        data = zmat   ))
+## contour(x,y,val$z)
+## title("Contour Plot of the Density", xlab="u",ylab="v")
+##   invisible(val)
 
-   val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
-       data = zmat   ))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="u",ylab="v")
-     invisible(val)
-}
+
+## }
+
+## contour.pbivd <- function(dist, n = 50, xlim = NA, ylim = NA, ...) {
+
+##     divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
+##     divis <- divis[2:(n+1)]
+
+##     if ( (is.na(xlim[1])) | (length(xlim) != 2)) {  
+##       x <- evalFunc(divis,get(paste("q",dist@Xmarg,sep = "")),dist@param.Xmarg)
+##     } else {  x <- seq(from = xlim[1], to = xlim[2], length = n) }
+
+##     if (is.na(ylim[1]) | length(ylim) != 2) {
+##      y <- evalFunc(divis,get(paste("q",dist@Ymarg,sep = "")),dist@param.Ymarg)
+##     } else { y <- seq(from = ylim[1], to = ylim[2], length = n) }
+
+##     xmat <- rep(x, n )
+##     ymat <- rep(y, each = n )
+##     zmat <- pbivd(dist, xmat, ymat)
+
+##    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, 
+##        data = zmat   ))
+## contour(x,y,val$z)
+## title("Contour Plot of the CDF", xlab="u",ylab="v")
+##      invisible(val)
+## }
 
 
 ######################### 
@@ -3436,2305 +3617,6 @@ setMethod("lambda","joe.copula",
     Phi(copula, t)/PhiDer(copula, t)
 } )
 
-
-########################################## 
-### Functions pbivd
-##########################################
-
-
-if(isGeneric("pbivd"))removeGeneric("pbivd")
-setGeneric("pbivd",function(dist, x, y)  standardGeneric("pbivd"))
-
-
-setMethod("pbivd","normal.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","frank.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","kimeldorf.sampson.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","gumbel.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","galambos.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","husler.reiss.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","tawn.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb5.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","normal.mix.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb1.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb2.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb3.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb6.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb7.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","joe.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","bb4.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-setMethod("pbivd","empirical.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(pcopula(dist@copula, xmar, ymar))
-} )
-
-
-### Functions dbivd  ### 
-
-
-if(isGeneric("dbivd"))removeGeneric("dbivd")
-setGeneric("dbivd",function(dist, x, y)  standardGeneric("dbivd"))
-
-
-setMethod("dbivd","normal.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","frank.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","kimeldorf.sampson.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","gumbel.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","galambos.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","husler.reiss.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","tawn.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb5.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","normal.mix.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb1.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb2.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb3.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb6.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb7.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","joe.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd","bb4.bivd",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-setMethod("dbivd"," ",
-     function(dist, x, y) {
-    xmar <- evalFunc(x, get(paste("p", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    ymar <- evalFunc(y, get(paste("p", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    dmarx <- evalFunc(x, get(paste("d", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    dmary <- evalFunc(y, get(paste("d", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    return(dcopula(dist@copula, xmar, ymar) * dmarx * dmary)
-} )
-
-
-
-# ###########################
-### Functions rbivd  ### 
-
-
-if(isGeneric("rbivd"))removeGeneric("rbivd")
-setGeneric("rbivd",function(dist,n)  standardGeneric("rbivd"))
-
-
-setMethod("rbivd","normal.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","frank.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","kimeldorf.sampson.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","gumbel.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","galambos.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","husler.reiss.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","tawn.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb5.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","normal.mix.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb1.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb2.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb3.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb6.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb7.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","joe.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","bb4.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-setMethod("rbivd","empirical.bivd",
-     function(dist,n) {
-    uv <- rcopula(dist@copula, n)
-    Xsim <- evalFunc(uv$x, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    Ysim <- evalFunc(uv$y, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    val <- list(x = Xsim, y = Ysim)
-    data.frame(val)
-} )
-
-
-### Functions persp.dbivd  ### 
-
-if(isGeneric("persp.dbivd"))removeGeneric("persp.dbivd")
-setGeneric("persp.dbivd",function(dist, n = 50, xlim = NA, ylim = NA, ...)  standardGeneric("persp.dbivd"))
-
-
-setMethod("persp.dbivd","normal.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","frank.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","kimeldorf.sampson.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","gumbel.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","galambos.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","husler.reiss.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","tawn.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb5.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","normal.mix.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb1.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb2.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb3.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb6.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb7.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","joe.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","bb4.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.dbivd","empirical.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-
-
-
-
-
-
- #
-# 
-### Functions persp.pbivd  ### 
-
-
-if(isGeneric("persp.pbivd"))removeGeneric("persp.pbivd")
-setGeneric("persp.pbivd",function(dist, n = 50, xlim = NA, ylim = NA, ...)  standardGeneric("persp.pbivd"))
-
-
-setMethod("persp.pbivd","normal.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","frank.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","kimeldorf.sampson.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","gumbel.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","galambos.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","husler.reiss.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","tawn.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb5.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","normal.mix.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb1.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb2.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb3.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb6.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb7.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","joe.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-setMethod("persp.pbivd","bb4.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-
-setMethod("persp.pbivd","empirical.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-#    val2 <- data.sheet(list(x = as.vector(xmat), y = as.vector(ymat), z = as.vector(zmat)))
-#    guiPlot("Data Grid Surface", DataSetValues = val2, ...)
-
-persp3d(x, y, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-
-     val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-    invisible(val)
-} )
-
-
-### Functions contour.dbivd  ### 
-
-#if(isGeneric("contour.dbivd")) removeGeneric("contour.dbivd") 
-#setGeneric("contour.dbivd",function(dist,n= 50, xlim = NA, ylim = NA, ...) #standardGeneric"contour.dbivd"))
-
-
-
-setMethod("contour.dbivd","normal.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","frank.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","kimeldorf.sampson.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","gumbel.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","galambos.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","husler.reiss.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","tawn.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb5.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","normal.mix.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb1.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb2.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb3.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb6.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb7.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","joe.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","bb4.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.dbivd","empirical.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the Density", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-
-### Functions contour.pbivd  ### 
-
-if(isGeneric("contour.pbivd"))removeGeneric("contour.pbivd")
-setGeneric("contour.pbivd",function(dist, n = 50, xlim = NA, ylim = NA, ...)  standardGeneric("contour.pbivd"))
-
-
-setMethod("contour.pbivd","normal.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","frank.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","kimeldorf.sampson.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","gumbel.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","galambos.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","husler.reiss.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","tawn.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb5.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","normal.mix.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb1.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb2.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb3.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb6.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb7.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","joe.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","bb4.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
-
-setMethod("contour.pbivd","empirical.bivd",
-     function(dist, n = 50, xlim = NA, ylim = NA, ...) {
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat))
-contour(x,y,val$z)
-title("Contour Plot of the CDF", xlab="x",ylab="y")
-    invisible(val)
-} )
 
 
 ##################################### 
@@ -6196,118 +4078,118 @@ structure(.Data = list("tau" = c(0., 0.10000000000000001, 0.20000000000000001, 0
     val
 }
 
-"persp.dbivd" <-  function(dist, n = 50, xlim = NA, ylim = NA, ...)
-{
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")),
-            dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")),
-            dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-#    print(wireframe(zmat ~ xmat * ymat, aspect = c(1, 8.5/11), scales =
-#        list(arrows = F), zlab = "Density", zoom = 1.2, xlab = "x",
-#        ylab = "y"))
-   val <- list(x = x, y = y, z = matrix(zmat, n, n))
-persp3d(x, y, val$z, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
-    invisible(val)
-}
+## "persp.dbivd" <-  function(dist, n = 50, xlim = NA, ylim = NA, ...)
+## {
+##     divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+##     divis <- divis[2:(n + 1)]
+##     if((is.na(xlim[1])) | (length(xlim) != 2)) {
+##         x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")),
+##             dist@param.Xmarg)
+##     }
+##     else {
+##         x <- seq(from = xlim[1], to = xlim[2], length = n)
+##     }
+##     if(is.na(ylim[1]) | length(ylim) != 2) {
+##         y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")),
+##             dist@param.Ymarg)
+##     }
+##     else {
+##         y <- seq(from = ylim[1], to = ylim[2], length = n)
+##     }
+##     xmat <- rep(x, n)
+##     ymat <- rep(y, each = n)
+##     zmat <- dbivd(dist, xmat, ymat)
+## #    print(wireframe(zmat ~ xmat * ymat, aspect = c(1, 8.5/11), scales =
+## #        list(arrows = F), zlab = "Density", zoom = 1.2, xlab = "x",
+## #        ylab = "y"))
+##    val <- list(x = x, y = y, z = matrix(zmat, n, n))
+## persp3d(x, y, val$z, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "Density")
+##     invisible(val)
+## }
 
-"persp.pbivd" <- function(dist, n = 50, xlim = NA, ylim = NA, ...)
-{
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@
-            param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@
-            param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(zmat, n, n))
-persp3d(x, y, val$z, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "cdf")
+## "persp.pbivd" <- function(dist, n = 50, xlim = NA, ylim = NA, ...)
+## {
+##     divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+##     divis <- divis[2:(n + 1)]
+##     if((is.na(xlim[1])) | (length(xlim) != 2)) {
+##         x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")), dist@
+##             param.Xmarg)
+##     }
+##     else {
+##         x <- seq(from = xlim[1], to = xlim[2], length = n)
+##     }
+##     if(is.na(ylim[1]) | length(ylim) != 2) {
+##         y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")), dist@
+##             param.Ymarg)
+##     }
+##     else {
+##         y <- seq(from = ylim[1], to = ylim[2], length = n)
+##     }
+##     xmat <- rep(x, n)
+##     ymat <- rep(y, each = n)
+##     zmat <- pbivd(dist, xmat, ymat)
+##     val <- list(x = x, y = y, z = matrix(zmat, n, n))
+## persp3d(x, y, val$z, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", ylab = "y", zlab = "cdf")
 
-#    print(wireframe(zmat ~ xmat * ymat, aspect = c(1, 8.5/11), scales = list(arrows
-#         = F), zlab = "Density", zoom = 1.2, xlab = "x", ylab = "y"))
-    invisible(val)
-}
+## #    print(wireframe(zmat ~ xmat * ymat, aspect = c(1, 8.5/11), scales = list(arrows
+## #         = F), zlab = "Density", zoom = 1.2, xlab = "x", ylab = "y"))
+##     invisible(val)
+## }
 
 
-"contour.dbivd" <- function(dist, n = 50, xlim = NA, ylim = NA, ...)
-{
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")),
-            dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")),
-            dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- dbivd(dist, xmat, ymat)
-    print(contourplot(zmat ~ xmat * ymat, xlab = "x", ylab = "y", cuts =
-        10))
-    val <- list(x = x, y = y, z = matrix(zmat, n, n))
-    invisible(val)
-}
+## "contour.dbivd" <- function(dist, n = 50, xlim = NA, ylim = NA, ...)
+## {
+##     divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+##     divis <- divis[2:(n + 1)]
+##     if((is.na(xlim[1])) | (length(xlim) != 2)) {
+##         x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")),
+##             dist@param.Xmarg)
+##     }
+##     else {
+##         x <- seq(from = xlim[1], to = xlim[2], length = n)
+##     }
+##     if(is.na(ylim[1]) | length(ylim) != 2) {
+##         y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")),
+##             dist@param.Ymarg)
+##     }
+##     else {
+##         y <- seq(from = ylim[1], to = ylim[2], length = n)
+##     }
+##     xmat <- rep(x, n)
+##     ymat <- rep(y, each = n)
+##     zmat <- dbivd(dist, xmat, ymat)
+##     print(contourplot(zmat ~ xmat * ymat, xlab = "x", ylab = "y", cuts =
+##         10))
+##     val <- list(x = x, y = y, z = matrix(zmat, n, n))
+##     invisible(val)
+## }
 
-"contour.pbivd" <- function(dist, n = 50, xlim = NA, ylim = NA, ...)
-{
-    divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
-    divis <- divis[2:(n + 1)]
-    if((is.na(xlim[1])) | (length(xlim) != 2)) {
-        x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")),
-            dist@param.Xmarg)
-    }
-    else {
-        x <- seq(from = xlim[1], to = xlim[2], length = n)
-    }
-    if(is.na(ylim[1]) | length(ylim) != 2) {
-        y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")),
-            dist@param.Ymarg)
-    }
-    else {
-        y <- seq(from = ylim[1], to = ylim[2], length = n)
-    }
-    xmat <- rep(x, n)
-    ymat <- rep(y, each = n)
-    zmat <- pbivd(dist, xmat, ymat)
-    val <- list(x = x, y = y, z = matrix(zmat, n, n))
-    print(contourplot(zmat ~ xmat * ymat, xlab = "x", ylab = "y", cuts =
-        10))
-    invisible(val)
-}
+## "contour.pbivd" <- function(dist, n = 50, xlim = NA, ylim = NA, ...)
+## {
+##     divis <- seq(from = 0.001, to = 0.999, length = (n + 2))
+##     divis <- divis[2:(n + 1)]
+##     if((is.na(xlim[1])) | (length(xlim) != 2)) {
+##         x <- evalFunc(divis, get(paste("q", dist@Xmarg, sep = "")),
+##             dist@param.Xmarg)
+##     }
+##     else {
+##         x <- seq(from = xlim[1], to = xlim[2], length = n)
+##     }
+##     if(is.na(ylim[1]) | length(ylim) != 2) {
+##         y <- evalFunc(divis, get(paste("q", dist@Ymarg, sep = "")),
+##             dist@param.Ymarg)
+##     }
+##     else {
+##         y <- seq(from = ylim[1], to = ylim[2], length = n)
+##     }
+##     xmat <- rep(x, n)
+##     ymat <- rep(y, each = n)
+##     zmat <- pbivd(dist, xmat, ymat)
+##     val <- list(x = x, y = y, z = matrix(zmat, n, n))
+##     print(contourplot(zmat ~ xmat * ymat, xlab = "x", ylab = "y", cuts =
+##         10))
+##     invisible(val)
+## }
 
 
 

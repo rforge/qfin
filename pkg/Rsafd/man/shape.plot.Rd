@@ -37,6 +37,10 @@
 }
 
 \examples{
+data("BCofLRet")
+NZ <- (BCofLRet !=0)
+BLRet <- BCofLRet[NZ]
+
 shape.plot(BLRet)
 shape.plot(BLRet,tail="lower")
 }
