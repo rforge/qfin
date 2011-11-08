@@ -3151,13 +3151,15 @@ persp3d(divis, divis, zmat, aspect=c(1, 1, 0.5), col = "lightblue",xlab = "x", y
 
 
 
-contour.dcopula <- function(cop, n = 50, ...) 
-{
+contour.dcopula <- function(x,  ...) 
+{args <- list(...)
+  if(!"n"%in%names(args)) args$n <- 50
+      n <- args$n
      divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
     divis <- divis[2:(n+1)]
         xmat <- rep(divis, n )
     ymat <- rep(divis, each = n)
-    zmat <- dcopula(cop,  xmat,  ymat)
+    zmat <- dcopula(x,  xmat,  ymat)
 
     val <- list(x = divis, y = divis, z = matrix(ncol = n, nrow = n, byrow = F,  data = zmat)   )
     contour(val)
@@ -3166,13 +3168,15 @@ title("Contour Plot of the Copula Density", xlab="u",ylab="v")
     invisible(val)
 }
 
-contour.pcopula <- function(cop, n = 50, ...)
- {
+contour.pcopula <- function(x, ...)
+ { args <- list(...)
+  if(!"n"%in%names(args)) args$n <- 50
+      n <- args$n
      divis <- seq(from = 0.001, to = 0.999, length = (n+2)) 
     divis <- divis[2:(n+1)]
         xmat <- rep(divis, n )
     ymat <- rep(divis, each = n)
-    zmat <- pcopula(cop,  xmat,  ymat)
+    zmat <- pcopula(x,  xmat,  ymat)
 
     val <- list(x = divis, y = divis, z = matrix(ncol = n, nrow = n, byrow = F, data = zmat)   )
 contour(val)
