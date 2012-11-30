@@ -25,10 +25,12 @@
 
 
 \examples{
+
 # One tail
 X <- rgpd(1024)
 x.est <- gpd.tail(X)
 tailplot(x.est)
+
 }
 
 \author{Rene Carmona, \email{rcarmona@princeton.edu}}
