@@ -37,6 +37,7 @@
 }
 
 \examples{
+\donotrun{
 data("BCofLRet")
 NZ <- (BCofLRet !=0)
 BLRet <- BCofLRet[NZ]
@@ -44,6 +45,6 @@ BLRet <- BCofLRet[NZ]
 shape.plot(BLRet)
 shape.plot(BLRet,tail="lower")
 }
-
+}
 \author{Rene Carmona, \email{rcarmona@princeton.edu}}
 \keyword{hplot}
