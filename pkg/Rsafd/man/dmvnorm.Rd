@@ -8,6 +8,7 @@
 \description{
 The mean of the distribution may be a d-dimensional vector. The covariance matrix should be given as a d x d non-negative definite matrix if supplied with the parameter \code{cov}. It can also be given,  if cov is missing, by a vector \code{sd} for the marginal standard deviations and a scalar \code{rho} implying a constant correlation between all the marginals. If the covariance structure of the marginals is supplied in this way,  \code{sd} should be a d-dimensional vector,
  and \code{rho} should be scalar. The dimension \code{d} may be inferred from other arguments.
+The code of this function is a mere wrapper for the function with the same name from the library \code{mvtnorm}. It was written to provide compatibility with S-Plus, hence the long list of parameters
 }
 
 \details{
@@ -35,9 +36,7 @@ rmvnorm(n, mean = rep(0, d), cov = diag(d), sd, rho, d = 2, sigma = cov, log = F
   \item{log}{boolean for logarithmic scale }
    \item{method}{String giving the method SVD or Choleski used}
 }
-\details{
-The code of this function is a mere wrapper for the function with the same name from the library \code{mvtnorm}. It was written to provide compatibility with S-Plus, hence the long list of parameters
-}
+
 \value{
 A list of the elements  
   \item{$x}{n x d Matrix giving the values where the density is computed}
