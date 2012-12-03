@@ -47,7 +47,7 @@ A list of the elements
 
 \seealso{\code{\link{dnorm}}}
 \examples{
-\donotrun{
+\dontrun{
 TSAMPLE <- rmvnorm(n=128, mean=rep(0,2), sd=rep(1,2), rho=.18) 
 TDENS <- kdest(TSAMPLE[,1], TSAMPLE[,2]) 
 }

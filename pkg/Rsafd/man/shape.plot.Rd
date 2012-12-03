@@ -37,7 +37,7 @@
 }
 
 \examples{
-\donotrun{
+\dontrun{
 data("BCofLRet")
 NZ <- (BCofLRet !=0)
 BLRet <- BCofLRet[NZ]
